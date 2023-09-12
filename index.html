@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Braidvis Network Vis</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://ialab.it.monash.edu/webcola/cola.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Bree+Serif&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div id="main_title">
+        <div id="title_in">How do people in the RAI community self-identify across research areas?</div>
+    </div>
+    <div id="selector">
+        <div id="title">
+            <img id="image" src="/data/5_logo_braid_left_subline-white-752x228.png">
+        </div>
+        <button id="n_button"></button>
+        <button id="o_button"></button>
+        <button id="m_button"></button>
+        <button id="p_button"></button>
+    </div>
+    <div class="vis" id="network"></div>
+    <div class="vis" id="backup">
+        <div class="container">
+            <div class="col" id="arc"></div>
+            <div class="col" id="chord"></div>
+        </div>
+    </div>
+    <div class="vis" id="beeswarm"></div>
+    <div id="mapid">
+    <svg>
+        <g id="basemap"></g>
+        <g id="airports"></g>
+    </svg>
+    </div>
+    <script src="/js/container.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

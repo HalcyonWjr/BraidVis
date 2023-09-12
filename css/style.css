@@ -1,0 +1,156 @@
+body,html{
+    margin: 0;
+    padding: 0;
+    font-family: "Bree Serif";
+    background-color: black;
+}
+
+body {
+    line-height: 1.4;
+    overflow-x: hidden;
+}
+
+h1, h2, h3 {
+    background-color: black;
+    color:white;
+    text-align: center;
+ }
+
+p {
+    background-color: black;
+    padding: 1em;
+    font-size: 12px;
+    color: #ADDAD9;
+}
+
+* {
+    overflow-y: hidden !important;
+}
+
+#mapid, #beeswarm{
+    opacity: 0;
+    position: absolute;
+    top: 50px;
+    right: 0px;
+}
+
+#network {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+}
+
+#selector{
+    background-color: black;
+    position: absolute;
+    left: 0px;
+}
+
+button {
+    color: black;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 6px;
+    border: 2px solid #282828;
+  }
+
+#m_button{
+    background-image: url("../data/map.png");
+    background-size:cover;
+    background-position:center;
+}
+
+#n_button{
+    background-image: url("../data/net.png");
+    background-size:cover;
+    background-position:center;
+    border: 2px solid white;
+}
+
+#o_button{
+    background-image: url("../data/arch.png");
+    background-size:cover;
+    background-position:center;
+}
+
+#p_button{
+    background-image: url("../data/bar.png");
+    background-size:cover;
+    background-position:center;
+}
+
+.airport, .otherCircles{
+    fill:  black;
+    opacity: 1;
+    stroke: #019EE2;
+    stroke-width: 2;
+  }
+
+.circ{
+    fill: white;
+    fill-opacity: 0.3;
+    stroke: black;
+    cursor: pointer;
+  }
+
+.tooltip {
+    font-size: 10pt;
+    font-weight: 900;
+    fill: white;
+    text-shadow: 1px 1px 0 #252525, 1px -1px 0 #252525, -1px 1px 0 #252525,
+      -1px -1px 0 #252525;
+  }
+
+#selector {
+    left: 3px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #181818;
+    border-radius: 5px;
+}
+
+#backup {
+    opacity: 0;
+}
+
+.container {
+    display: flex;
+    justify-content:right;
+}
+
+.col {
+    padding: 10px;
+}
+
+text.shadow {
+    text-shadow: 0 0 10px #000;
+}
+
+#main_title {
+    margin: none;
+    font-size: 30px;
+    color: white;
+    display: flex;
+    position: absolute;
+    top: -10px;
+    z-index: 5;
+}
+
+#main_title div {
+    margin: auto;
+    background-color: black;
+    top: -10px;
+    border: 2px solid #282828;
+    padding: 8px;
+    border-radius: 5px;
+}

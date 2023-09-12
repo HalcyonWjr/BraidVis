@@ -1,0 +1,20 @@
+{
+    "attendees": [
+        {
+            "id": 1,
+            "name": "Tom Higgins",
+            "areas": ["Arts", "Humanities"],
+            "sectors": ["academia"],
+            "region": "EH",
+            "career_stage": "Early Career"
+        },
+        {
+            "id": 2,
+            "name": "Jane Ven",
+            "areas": ["Technical", "Arts"],
+            "sectors": ["industry"],
+            "region": "LN",
+            "career_stage": "Mid Career"
+        }
+    ]
+}
