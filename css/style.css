@@ -30,9 +30,14 @@ p {
 #mapid, #beeswarm{
     opacity: 0;
     position: absolute;
-    top: 50px;
+    top: 0px;
     right: 0px;
 }
+
+#beeswarm{
+    top: 50px;
+}
+
 
 #network {
     position: absolute;

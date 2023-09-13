@@ -9,7 +9,7 @@ const defaultGrey = "#a7a6ba";
 const secotorPalette = ["#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5","#ffed6f"]
 
 // TOP MARGIN FOR TITLES
-const paddingTopForTitles = 60;
+const paddingTopForTitles = 50;
 
 // TRANSFORM "ATTENDEES" FOR NETWORK
 function transformToNetwork(data, areaAttr) {
@@ -389,187 +389,6 @@ function network(networkData) {
     
 }
 
-function networkPageBound(networkData) {
-    const width = viewportWidth;
-    const height = viewportHeight;
-
-    // Scales for node degree and link degree
-    const nodeScale = d3.scaleLinear()
-        .domain([d3.min(networkData.nodes, d => d.degree), d3.max(networkData.nodes, d => d.degree)])
-        .range([3, 40]);
-
-    const linkScale = d3.scaleLinear()
-        .domain([d3.min(networkData.links, d => d.value), d3.max(networkData.links, d => d.value)])
-        .range([1, 20]);
-
-    const areas = networkData.nodes.map(node => node.id);
-
-    const greyCount = areas.length - colorPalette.length;
-    const greyPalette = Array(greyCount).fill(defaultGrey);
-    
-    const colorScale = d3.scaleOrdinal()
-        .domain(areas)
-        .range([...colorPalette, ...greyPalette]);
- 
-    const svg = d3.select("#network").append("svg")
-        .attr("width", width * 0.8)
-        .attr("height", height);
-
-    console.log("Original links", networkData)
-
-    let colaNetwork = {};
-    colaNetwork.links = [];
-    colaNetwork.nodes = Object.assign([], networkData.nodes);
-
-    var counter = 0
-
-    for (let node of colaNetwork.nodes) {
-        node.index = counter
-        counter++
-    }
-
-    function getIndexFromNodeId( nodeArray, idStr) {
-        for (const node of nodeArray) {
-            if (node.id === idStr) {
-                return node.index;
-            }
-        }
-        return 65535;
-    }
-
-    for(let linkIndex=0; linkIndex < networkData.links.length; linkIndex++) {
-        colaNetwork.links.push({
-            source: getIndexFromNodeId(colaNetwork.nodes, networkData.links[linkIndex].source),
-            target: getIndexFromNodeId(networkData.nodes, networkData.links[linkIndex].target),
-            value: networkData.links[linkIndex].value
-        })
-    }
-
-    console.log(colaNetwork)
-
-    const defs = svg.append("defs");
-
-    const dropShadowFilter = defs.append("filter")
-        .attr("id", "drop-shadow")
-        .attr("width", "200%")
-        .attr("height", "200%");
-
-    dropShadowFilter.append("feGaussianBlur")
-        .attr("in", "SourceAlpha")
-        .attr("stdDeviation", 4)
-        .attr("result", "blur");
-
-    dropShadowFilter.append("feOffset")
-        .attr("in", "blur")
-        .attr("dx", 5)
-        .attr("dy", 5)
-        .attr("result", "offsetBlur");
-
-    const feMerge = dropShadowFilter.append("feMerge");
-
-    feMerge.append("feMergeNode")
-        .attr("in", "offsetBlur");
-    feMerge.append("feMergeNode")
-        .attr("in", "SourceGraphic");
-
-    // PAGE BOUND AND CONSTRAINTS
-    var pageBounds = { x: 0, y: 0, width: width*0.8, height: height },
-            page = svg.append('rect').attr('id', 'page').attr(pageBounds),
-            nodeRadius = 10,
-            realGraphNodes = colaNetwork.nodes.slice(0),
-            fixedNode = {fixed: true, fixedWeight: 100},
-            topLeft = { ...fixedNode, x: pageBounds.x, y: pageBounds.y },
-            tlIndex = colaNetwork.nodes.push(topLeft) - 1,
-            bottomRight = { ...fixedNode, x: pageBounds.x + pageBounds.width, y: pageBounds.y + pageBounds.height },
-            brIndex = colaNetwork.nodes.push(bottomRight) - 1,
-            constraints = [];
-        for (var i = 0; i < realGraphNodes.length; i++) {
-            constraints.push({ axis: 'x', type: 'separation', left: tlIndex, right: i, gap: nodeRadius });
-            constraints.push({ axis: 'y', type: 'separation', left: tlIndex, right: i, gap: nodeRadius });
-            constraints.push({ axis: 'x', type: 'separation', left: i, right: brIndex, gap: nodeRadius });
-            constraints.push({ axis: 'y', type: 'separation', left: i, right: brIndex, gap: nodeRadius });
-        }
-
-    var d3cola = cola.d3adaptor(d3)
-        .size([width*0.8, height]);
-
-    d3cola
-        .nodes(colaNetwork.nodes)
-        .links(colaNetwork.links)
-        // .linkDistance(200)
-        // .symmetricDiffLinkLengths(22)
-        .constraints(constraints)
-        .jaccardLinkLengths(100, 0.2)
-        // .handleDisconnected(false)
-        .avoidOverlaps(true);
-  
-    const links = svg.append("g")
-        .selectAll("line")
-        .data(colaNetwork.links.slice(0,100))
-        .enter().append("line")
-        .style("stroke", strokeHighlight)
-        .style("stroke-opacity", 0.8)
-        .style("stroke-width", d => linkScale(d.value));
-
-    const linkLow = svg.append("g")
-        .selectAll("line")
-        .data(colaNetwork.links.slice(100, 800))
-        .enter().append("line")
-        .style("stroke", strokeHighlight)
-        .style("stroke-opacity", 0.1)
-        .style("stroke-width", d => linkScale(d.value));
-
-    const nodes = svg.append("g")
-        .selectAll("circle")
-        .data(colaNetwork.nodes)
-        .enter().append("circle")
-        .attr("r", d => nodeScale(d.degree))
-        .style("fill", d => colorScale(d.id))
-        .style("filter", "url(#drop-shadow)");
-        // .call(d3cola.drag); 
-
-    const fontScale =  d3.scaleLinear()
-        .domain([d3.min(networkData.nodes, d => d.degree), d3.max(networkData.nodes, d => d.degree)])
-        .range([9, 50]);
-
-    // const labels = svg.append("g")
-    //     .selectAll("text")
-    //     .data(colaNetwork.nodes)
-    //     .enter().append("text")
-    //     .text(d => d.id)
-    //     .style("font-size", d => `${fontScale(d.degree)}px`)
-    //     .attr("class", "shadow") 
-    //     .attr("font-weight", 300)
-    //     .attr("fill", strokeHighlight)
-    //     .attr("dx", 12)
-    //     .attr("dy", ".35em");
-
-    d3cola.on('tick', function() {
-        console.log('tick calculation');
-        nodes
-            .attr("cx", d => d.x)
-            .attr("cy", d => d.y);
-    
-        links
-            .attr("x1", d => d.source.x)
-            .attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x)
-            .attr("y2", d => d.target.y);
-
-        labels
-            .attr("x", d => d.x)
-            .attr("y", d => d.y);
-
-        linkLow
-            .attr("x1", d => d.source.x)
-            .attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x)
-            .attr("y2", d => d.target.y);
-    });
-
-    d3cola.start(5, 15, 30);
-}
-
 // ARC DIAGRAM
 function arc(networkData) {
     const width = viewportWidth;
@@ -828,10 +647,10 @@ function nestedSectorPack(data, networkData) {
         .range([...colorPalette, ...greyPalette]);
 
     const pack = d3.pack()
-        .size([width, height])
+        .size([width, height- paddingTopForTitles])
         .padding(d => {
             return d.depth == 0 ? 50 : 5;
-        });    
+        });
 
     const root = d3.hierarchy(hierarchyData)
         .sum(d => d.value)
@@ -908,7 +727,6 @@ function nestedSectorPack(data, networkData) {
             .style("font-size", d => fontSizeScale(d.data.value) + "px")
             .text(d => d.data.value);
     
-
     return mainSvg.node();
 }
 
