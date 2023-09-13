@@ -89,8 +89,8 @@ function swapping () {
     if (number == 2) {
         d3.select("#m_button")
             .transition().duration(200)
+            d3.select("#o_button")
             .style("border", "2px solid white")
-        d3.select("#o_button")
             .transition().duration(200)
             .style("border", "2px solid #282828")
 
@@ -126,10 +126,10 @@ function swapping () {
     }
 }
 
-// d3.select("#mapid")
+// d3.select("#beeswarm")
 //         .style("opacity", 1)
 
-// d3.select("#network, #beeswarm, #backup")
+// d3.select("#network, #mapid, #backup")
 //         .style("opacity", 0)
 
 Promise.all([d3.json("../data/sample.json")]).then(function (files) {

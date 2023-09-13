@@ -27,17 +27,19 @@ p {
     overflow-y: hidden !important;
 }
 
-#mapid, #beeswarm{
+#beeswarm{
+    opacity: 0;
+    position: absolute;
+    top: 50px;
+    right: 0px;
+}
+
+#mapid {
     opacity: 0;
     position: absolute;
     top: 0px;
     right: 0px;
 }
-
-#beeswarm{
-    top: 50px;
-}
-
 
 #network {
     position: absolute;
@@ -58,7 +60,7 @@ button {
     text-decoration: none;
     font-size: 16px;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 5px;
     border: 2px solid #282828;
   }
 
@@ -143,7 +145,7 @@ text.shadow {
 
 #main_title {
     margin: none;
-    font-size: 30px;
+    font-size: 50px;
     color: white;
     display: flex;
     position: absolute;
@@ -157,5 +159,31 @@ text.shadow {
     top: -10px;
     border: 2px solid #282828;
     padding: 8px;
+    border-radius: 5px;
+}
+
+#qrcode{
+    color: white;
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    display: flex;
+    align-items: flex-end;
+}
+
+#qrimage{
+    width: 120px;
+    padding: 1px;
+    border-radius: 2px;
+}
+
+#qrp{
+    margin: 0px;
+    float:left;
+    padding-bottom: 2px;
+    padding-top: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 20px;
     border-radius: 5px;
 }

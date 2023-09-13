@@ -1,15 +1,15 @@
 // "ATTENDESS" DATA
 const dataPath = "/data/output_attendees.json"
 
-
 // COLOR SCHEMES
 const colorPalette = ["#E91E63", "#272AB0", "#9B8BFB", "#C2185B", "#276BB0", "#E26F2A", "#9C27B0", "#57ACDC", "#E69621", "#5727B0", "#57DCBE", "#509181"]
 const strokeHighlight = "#E4F0E9"
 const defaultGrey = "#a7a6ba";
 const secotorPalette = ["#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5","#ffed6f"]
+const braidColors = ["#D9D9D9", "#9ED5D3", "#0095DB", "#00517B"];
 
 // TOP MARGIN FOR TITLES
-const paddingTopForTitles = 50;
+const paddingTopForTitles = 70;
 
 // TRANSFORM "ATTENDEES" FOR NETWORK
 function transformToNetwork(data, areaAttr) {
@@ -389,6 +389,187 @@ function network(networkData) {
     
 }
 
+function networkPageBound(networkData) {
+    const width = viewportWidth;
+    const height = viewportHeight;
+
+    // Scales for node degree and link degree
+    const nodeScale = d3.scaleLinear()
+        .domain([d3.min(networkData.nodes, d => d.degree), d3.max(networkData.nodes, d => d.degree)])
+        .range([3, 40]);
+
+    const linkScale = d3.scaleLinear()
+        .domain([d3.min(networkData.links, d => d.value), d3.max(networkData.links, d => d.value)])
+        .range([1, 20]);
+
+    const areas = networkData.nodes.map(node => node.id);
+
+    const greyCount = areas.length - colorPalette.length;
+    const greyPalette = Array(greyCount).fill(defaultGrey);
+    
+    const colorScale = d3.scaleOrdinal()
+        .domain(areas)
+        .range([...colorPalette, ...greyPalette]);
+ 
+    const svg = d3.select("#network").append("svg")
+        .attr("width", width * 0.8)
+        .attr("height", height);
+
+    console.log("Original links", networkData)
+
+    let colaNetwork = {};
+    colaNetwork.links = [];
+    colaNetwork.nodes = Object.assign([], networkData.nodes);
+
+    var counter = 0
+
+    for (let node of colaNetwork.nodes) {
+        node.index = counter
+        counter++
+    }
+
+    function getIndexFromNodeId( nodeArray, idStr) {
+        for (const node of nodeArray) {
+            if (node.id === idStr) {
+                return node.index;
+            }
+        }
+        return 65535;
+    }
+
+    for(let linkIndex=0; linkIndex < networkData.links.length; linkIndex++) {
+        colaNetwork.links.push({
+            source: getIndexFromNodeId(colaNetwork.nodes, networkData.links[linkIndex].source),
+            target: getIndexFromNodeId(networkData.nodes, networkData.links[linkIndex].target),
+            value: networkData.links[linkIndex].value
+        })
+    }
+
+    console.log(colaNetwork)
+
+    const defs = svg.append("defs");
+
+    const dropShadowFilter = defs.append("filter")
+        .attr("id", "drop-shadow")
+        .attr("width", "200%")
+        .attr("height", "200%");
+
+    dropShadowFilter.append("feGaussianBlur")
+        .attr("in", "SourceAlpha")
+        .attr("stdDeviation", 4)
+        .attr("result", "blur");
+
+    dropShadowFilter.append("feOffset")
+        .attr("in", "blur")
+        .attr("dx", 5)
+        .attr("dy", 5)
+        .attr("result", "offsetBlur");
+
+    const feMerge = dropShadowFilter.append("feMerge");
+
+    feMerge.append("feMergeNode")
+        .attr("in", "offsetBlur");
+    feMerge.append("feMergeNode")
+        .attr("in", "SourceGraphic");
+
+    // PAGE BOUND AND CONSTRAINTS
+    var pageBounds = { x: 0, y: 0, width: width*0.8, height: height },
+            page = svg.append('rect').attr('id', 'page').attr(pageBounds),
+            nodeRadius = 10,
+            realGraphNodes = colaNetwork.nodes.slice(0),
+            fixedNode = {fixed: true, fixedWeight: 100},
+            topLeft = { ...fixedNode, x: pageBounds.x, y: pageBounds.y },
+            tlIndex = colaNetwork.nodes.push(topLeft) - 1,
+            bottomRight = { ...fixedNode, x: pageBounds.x + pageBounds.width, y: pageBounds.y + pageBounds.height },
+            brIndex = colaNetwork.nodes.push(bottomRight) - 1,
+            constraints = [];
+        for (var i = 0; i < realGraphNodes.length; i++) {
+            constraints.push({ axis: 'x', type: 'separation', left: tlIndex, right: i, gap: nodeRadius });
+            constraints.push({ axis: 'y', type: 'separation', left: tlIndex, right: i, gap: nodeRadius });
+            constraints.push({ axis: 'x', type: 'separation', left: i, right: brIndex, gap: nodeRadius });
+            constraints.push({ axis: 'y', type: 'separation', left: i, right: brIndex, gap: nodeRadius });
+        }
+
+    var d3cola = cola.d3adaptor(d3)
+        .size([width*0.8, height]);
+
+    d3cola
+        .nodes(colaNetwork.nodes)
+        .links(colaNetwork.links)
+        // .linkDistance(200)
+        // .symmetricDiffLinkLengths(22)
+        .constraints(constraints)
+        .jaccardLinkLengths(100, 0.2)
+        // .handleDisconnected(false)
+        .avoidOverlaps(true);
+  
+    const links = svg.append("g")
+        .selectAll("line")
+        .data(colaNetwork.links.slice(0,100))
+        .enter().append("line")
+        .style("stroke", strokeHighlight)
+        .style("stroke-opacity", 0.8)
+        .style("stroke-width", d => linkScale(d.value));
+
+    const linkLow = svg.append("g")
+        .selectAll("line")
+        .data(colaNetwork.links.slice(100, 800))
+        .enter().append("line")
+        .style("stroke", strokeHighlight)
+        .style("stroke-opacity", 0.1)
+        .style("stroke-width", d => linkScale(d.value));
+
+    const nodes = svg.append("g")
+        .selectAll("circle")
+        .data(colaNetwork.nodes)
+        .enter().append("circle")
+        .attr("r", d => nodeScale(d.degree))
+        .style("fill", d => colorScale(d.id))
+        .style("filter", "url(#drop-shadow)");
+        // .call(d3cola.drag); 
+
+    const fontScale =  d3.scaleLinear()
+        .domain([d3.min(networkData.nodes, d => d.degree), d3.max(networkData.nodes, d => d.degree)])
+        .range([9, 50]);
+
+    // const labels = svg.append("g")
+    //     .selectAll("text")
+    //     .data(colaNetwork.nodes)
+    //     .enter().append("text")
+    //     .text(d => d.id)
+    //     .style("font-size", d => `${fontScale(d.degree)}px`)
+    //     .attr("class", "shadow") 
+    //     .attr("font-weight", 300)
+    //     .attr("fill", strokeHighlight)
+    //     .attr("dx", 12)
+    //     .attr("dy", ".35em");
+
+    d3cola.on('tick', function() {
+        console.log('tick calculation');
+        nodes
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y);
+    
+        links
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+
+        labels
+            .attr("x", d => d.x)
+            .attr("y", d => d.y);
+
+        linkLow
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+    });
+
+    d3cola.start(5, 15, 30);
+}
+
 // ARC DIAGRAM
 function arc(networkData) {
     const width = viewportWidth;
@@ -415,7 +596,7 @@ function arc(networkData) {
 
     const svg = d3.select("#arc")
         .append("svg")
-          .attr("width", width * 0.30)
+          .attr("width", width * 0.35)
           .attr("height", height)
         .append("g")
           .attr("transform",
@@ -537,13 +718,13 @@ function chord(network, matrix) {
     const ribbon = d3.ribbon()
       .radius(innerRadius);
 
-    const svgAspectRatio = (width * 0.45) / height;
+    const svgAspectRatio = (width * 0.4) / height;
     const viewBoxWidth = 2 * outerRadius + 50;
     const viewBoxHeight = viewBoxWidth / svgAspectRatio;
 
     const svg = d3.select("#chord")
         .append("svg")
-            .attr("width", width * 0.45)
+            .attr("width", width * 0.4)
             .attr("height", height)
             .attr("viewBox", [-viewBoxWidth / 2, -viewBoxHeight / 2, viewBoxWidth, viewBoxHeight]);
 
@@ -574,11 +755,30 @@ function chord(network, matrix) {
         .attr("dy", "-0.25em")
         .append("textPath")
             .attr("href", d => "#arc-" + d.index)
-            .attr("startOffset", "0%")
+            .attr("startOffset", "1%")
             .text(d => areas[d.index])
             .attr("font-size", "15px")
             .attr("font-weight", 500)
             .attr("fill", strokeHighlight);
+
+    // const groupTick = group.append("g")
+    //     .selectAll()
+    //     .data(d => groupTicks(d, tickStep))
+    //     .join("g")
+    //         .attr("transform", d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
+
+    // groupTick.append("line")
+    //     .attr("stroke", "none")
+    //     .attr("x2", 6);
+
+    // groupTick
+    //     .filter(d => d.value % tickStepMajor === 0)
+    //     .append("text")
+    //         .attr("x", 8)
+    //         .attr("dy", ".35em")
+    //         .attr("transform", d => d.angle > Math.PI ? "rotate(180) translate(-16)" : null)
+    //         .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
+    //         .text(d => formatValue(d.value));
 
     svg.append("g")
         .attr("fill-opacity", 0.7)
@@ -628,10 +828,10 @@ function nestedSectorPack(data, networkData) {
         .range([...colorPalette, ...greyPalette]);
 
     const pack = d3.pack()
-        .size([width, height- paddingTopForTitles])
+        .size([width, height])
         .padding(d => {
             return d.depth == 0 ? 50 : 5;
-        });
+        });    
 
     const root = d3.hierarchy(hierarchyData)
         .sum(d => d.value)
@@ -708,6 +908,7 @@ function nestedSectorPack(data, networkData) {
             .style("font-size", d => fontSizeScale(d.data.value) + "px")
             .text(d => d.data.value);
     
+
     return mainSvg.node();
 }
 
@@ -730,16 +931,21 @@ function stackBar(data) {
         }));
     };
 
+    const getCareer = data.map(d => d.name);
+    const colorScale = d3.scaleOrdinal()
+        .domain(getCareer)
+        .range(braidColors);
+
     const svg = d3.select("#beeswarm").select("svg");
     const barGroup = svg.append("g")
-        .attr("transform", `translate(${viewportWidth*0.7 - barWidth - margin.right}, ${margin.top})`);
+        .attr("transform", `translate(${viewportWidth*0.7 - barWidth - margin.right}, ${paddingTopForTitles})`);
 
     barGroup.append("g")
         .attr("stroke", "white")
         .selectAll("rect")
         .data(stack())
         .join("rect")
-        .attr("fill", "black")
+        .attr("fill", d => colorScale(d.name))
         .attr("y", d => yScale(d.endValue))
         .attr("x", 0)
         .attr("height", d => yScale(d.startValue) - yScale(d.endValue))
@@ -783,6 +989,17 @@ fetch(dataPath)
         nestedSectorPack(groupedData, networkData);
 
         const barData = transformToSector(data, "career");
+        const careerOrder = ['Other', 'Advanced career', 'Mid career', 'Early career'];
+
+        barData.sort((a, b) => {
+            const orderA = careerOrder.indexOf(a.name);
+            const orderB = careerOrder.indexOf(b.name);
+            if (orderA === -1 && orderB === -1) return 0;
+            if (orderA === -1) return 1; 
+            if (orderB === -1) return -1; 
+            return orderA - orderB; 
+        });
+
         stackBar(barData);
 
     });
