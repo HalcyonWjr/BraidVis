@@ -44,7 +44,7 @@ function drawMap(map) {
 }
 
 let number = -1
-setInterval(swapping, 5000)
+setInterval(swapping, 18000)
 function swapping () {
     number += 1;
     if (number > 3) {
