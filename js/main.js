@@ -415,7 +415,7 @@ function arc(networkData) {
 
     const svg = d3.select("#arc")
         .append("svg")
-          .attr("width", width * 0.35)
+          .attr("width", width * 0.30)
           .attr("height", height)
         .append("g")
           .attr("transform",
@@ -537,13 +537,13 @@ function chord(network, matrix) {
     const ribbon = d3.ribbon()
       .radius(innerRadius);
 
-    const svgAspectRatio = (width * 0.4) / height;
+    const svgAspectRatio = (width * 0.45) / height;
     const viewBoxWidth = 2 * outerRadius + 50;
     const viewBoxHeight = viewBoxWidth / svgAspectRatio;
 
     const svg = d3.select("#chord")
         .append("svg")
-            .attr("width", width * 0.4)
+            .attr("width", width * 0.45)
             .attr("height", height)
             .attr("viewBox", [-viewBoxWidth / 2, -viewBoxHeight / 2, viewBoxWidth, viewBoxHeight]);
 
@@ -574,30 +574,11 @@ function chord(network, matrix) {
         .attr("dy", "-0.25em")
         .append("textPath")
             .attr("href", d => "#arc-" + d.index)
-            .attr("startOffset", "1%")
+            .attr("startOffset", "0%")
             .text(d => areas[d.index])
             .attr("font-size", "15px")
             .attr("font-weight", 500)
             .attr("fill", strokeHighlight);
-
-    // const groupTick = group.append("g")
-    //     .selectAll()
-    //     .data(d => groupTicks(d, tickStep))
-    //     .join("g")
-    //         .attr("transform", d => `rotate(${d.angle * 180 / Math.PI - 90}) translate(${outerRadius},0)`);
-
-    // groupTick.append("line")
-    //     .attr("stroke", "none")
-    //     .attr("x2", 6);
-
-    // groupTick
-    //     .filter(d => d.value % tickStepMajor === 0)
-    //     .append("text")
-    //         .attr("x", 8)
-    //         .attr("dy", ".35em")
-    //         .attr("transform", d => d.angle > Math.PI ? "rotate(180) translate(-16)" : null)
-    //         .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
-    //         .text(d => formatValue(d.value));
 
     svg.append("g")
         .attr("fill-opacity", 0.7)
